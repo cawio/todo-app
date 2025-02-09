@@ -27,16 +27,21 @@ public static class AuthorizationEndpoints
 
     private static async void Login(HttpContext context)
     {
+        var frontendUrl =
+            context
+                .RequestServices.GetRequiredService<IConfiguration>()
+                .GetValue<string>("Frontend:Url")
+            ?? throw new ArgumentNullException("Frontend URL is missing");
         if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
         {
             await context.ChallengeAsync(
                 DiscordAuthenticationDefaults.AuthenticationScheme,
-                new AuthenticationProperties { RedirectUri = "https://localhost:4200/" }
+                new AuthenticationProperties { RedirectUri = frontendUrl }
             );
         }
         else
         {
-            context.Response.Redirect("https://localhost:4200/");
+            context.Response.Redirect(frontendUrl);
         }
     }
 

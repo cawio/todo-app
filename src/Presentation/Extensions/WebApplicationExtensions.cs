@@ -30,6 +30,7 @@ public static class WebApplicationExtensions
         #region MinimalApi
 
         app.MapAuthorizationEndpoints();
+        app.MapTodoListEndpoints();
 
         #endregion MinimalApi
 

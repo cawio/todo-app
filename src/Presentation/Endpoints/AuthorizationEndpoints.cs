@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Application.Services;
 using AspNet.Security.OAuth.Discord;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -8,53 +10,64 @@ public static class AuthorizationEndpoints
 {
     public static WebApplication MapAuthorizationEndpoints(this WebApplication app)
     {
-        app.MapGet(
-                "/api/auth/login",
-                async context =>
-                {
-                    if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
-                    {
-                        await context.ChallengeAsync(
-                            DiscordAuthenticationDefaults.AuthenticationScheme,
-                            new AuthenticationProperties { RedirectUri = "https://localhost:4200/" }
-                        );
-                    }
-                    else
-                    {
-                        context.Response.Redirect("https://localhost:4200/");
-                    }
-                }
-            )
-            .AllowAnonymous();
+        var group = app.MapGroup("/api/auth")
+            .WithTags("auth")
+            .WithDescription("Endpoints for user authentication")
+            .WithOpenApi();
 
-        app.MapGet(
-            "/api/auth/logout",
-            async context =>
-            {
-                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                context.Response.Redirect("/");
-            }
-        );
-
-        app.MapGet(
-                "/api/auth/me",
-                (HttpContext context) =>
-                {
-                    if (context.User?.Identity != null && context.User.Identity.IsAuthenticated)
-                    {
-                        return Results.Ok(
-                            new
-                            {
-                                Username = context.User.Identity.Name,
-                                Claims = context.User.Claims.Select(c => new { c.Type, c.Value })
-                            }
-                        );
-                    }
-                    return Results.Unauthorized();
-                }
-            )
+        _ = group.MapGet("/login", Login).WithSummary("Login");
+        _ = group.MapGet("/logout", Logout).WithSummary("Logout").RequireAuthorization();
+        _ = group
+            .MapGet("/me", Me)
+            .WithSummary("Get currently logged in User")
             .RequireAuthorization();
 
         return app;
+    }
+
+    private static async void Login(HttpContext context)
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+        {
+            await context.ChallengeAsync(
+                DiscordAuthenticationDefaults.AuthenticationScheme,
+                new AuthenticationProperties { RedirectUri = "https://localhost:4200/" }
+            );
+        }
+        else
+        {
+            context.Response.Redirect("https://localhost:4200/");
+        }
+    }
+
+    private static async void Logout(HttpContext context)
+    {
+        await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        context.Response.Redirect("/");
+    }
+
+    private static async Task<IResult> Me(IUserService userService, HttpContext context)
+    {
+        if (context.User?.Identity != null && context.User.Identity.IsAuthenticated)
+        {
+            var discordId = context
+                .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                ?.Value;
+            if (discordId == null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var user = await userService.GetUserByDiscordIdAsync(ulong.Parse(discordId));
+
+            if (user == null)
+            {
+                return Results.Unauthorized();
+            }
+
+            return Results.Ok(user);
+        }
+
+        return Results.Unauthorized();
     }
 }

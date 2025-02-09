@@ -1,6 +1,6 @@
-using Application.Entities;
+using Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
-using Task = Application.Entities.Task;
+using Task = Infrastructure.Entities.Task;
 
 namespace Infrastructure;
 
@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Task> Tasks => Set<Task>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<TaskTags> TodoListTags => Set<TaskTags>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

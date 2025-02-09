@@ -1,7 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application;
+using Application.Services;
+using AspNet.Security.OAuth.Discord;
 using Infrastructure;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http.Json;
 
 namespace Presentation.Extensions;
@@ -70,6 +74,66 @@ public static class WebApplicationBuilderExtensions
         _ = builder.Services.AddApplication();
 
         #endregion Project Dependencies
+
+        #region Authentication
+
+        _ = builder
+            .Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = DiscordAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie()
+            .AddDiscord(options =>
+            {
+                options.ClientId =
+                    builder.Configuration["Authentication:Discord:ClientId"]
+                    ?? throw new ArgumentNullException("Discord ClientId is missing");
+                options.ClientSecret =
+                    builder.Configuration["Authentication:Discord:ClientSecret"]
+                    ?? throw new ArgumentNullException("Discord ClientSecret is missing");
+
+                options.Scope.Add("identify");
+
+                options.CallbackPath = "/api/auth/signin-discord";
+
+                options.Events = new OAuthEvents
+                {
+                    OnCreatingTicket = async context =>
+                    {
+                        var discordUser = context.User;
+                        string discordId =
+                            discordUser.GetProperty("id").GetString()
+                            ?? throw new ArgumentNullException("Discord ID is missing");
+                        string username =
+                            discordUser.GetProperty("username").GetString()
+                            ?? throw new ArgumentNullException("Discord Username is missing");
+
+                        var userService =
+                            context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+
+                        var user = await userService.GetUserByDiscordIdAsync(
+                            ulong.Parse(discordId)
+                        );
+                        if (user == null)
+                        {
+                            user = await userService.CreateUserAsync(
+                                ulong.Parse(discordId),
+                                username
+                            );
+                        }
+                        else
+                        {
+                            user.Name = username;
+                            user = await userService.UpdateUserAsync(user);
+                        }
+                    }
+                };
+            });
+
+        _ = builder.Services.AddAuthorization();
+
+        #endregion Authentication
 
         return builder;
     }

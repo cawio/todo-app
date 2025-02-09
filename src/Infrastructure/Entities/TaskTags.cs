@@ -1,6 +1,4 @@
-using System;
-
-namespace Application.Entities;
+namespace Infrastructure.Entities;
 
 public class TaskTags
 {

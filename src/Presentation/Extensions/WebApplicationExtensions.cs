@@ -1,3 +1,5 @@
+using Presentation.Endpoints;
+
 namespace Presentation.Extensions;
 
 public static class WebApplicationExtensions
@@ -7,6 +9,8 @@ public static class WebApplicationExtensions
         #region Security
 
         _ = app.UseHsts();
+        _ = app.UseAuthentication();
+        _ = app.UseAuthorization();
 
         #endregion Security
 
@@ -24,6 +28,8 @@ public static class WebApplicationExtensions
 
 
         #region MinimalApi
+
+        app.MapAuthorizationEndpoints();
 
         #endregion MinimalApi
 

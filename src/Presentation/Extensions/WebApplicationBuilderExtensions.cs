@@ -42,10 +42,15 @@ public static class WebApplicationBuilderExtensions
 
         _ = builder.Services.AddCors(options =>
         {
-            options.AddDefaultPolicy(builder =>
-            {
-                _ = builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-            });
+            options.AddPolicy(
+                "Frontend",
+                builder =>
+                    builder
+                        .WithOrigins("http://localhost:4200") // Your Angular app’s URL
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+            );
         });
 
         #endregion CORS
@@ -83,7 +88,17 @@ public static class WebApplicationBuilderExtensions
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = DiscordAuthenticationDefaults.AuthenticationScheme;
             })
-            .AddCookie()
+            .AddCookie(options =>
+            {
+                options.Cookie.Name = "auth_cookie";
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.MaxAge = TimeSpan.FromDays(30);
+                options.LoginPath = "/api/auth/login";
+                options.LogoutPath = "/api/auth/logout";
+                options.AccessDeniedPath = "/api/auth/access-denied";
+            })
             .AddDiscord(options =>
             {
                 options.ClientId =

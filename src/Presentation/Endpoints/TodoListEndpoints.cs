@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Application;
 using Infrastructure.Entities;
+using Presentation.Contracts.Responses;
 
 namespace Presentation.Endpoints;
 
@@ -15,7 +16,7 @@ public static class TodoListEndpoints
 
         _ = group
             .MapGet("", GetTodoLists)
-            .Produces<List<TodoList>>()
+            .Produces<List<TodoListResponse>>()
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .WithSummary("Lookup all TodoLists")
             .WithDescription("\n    GET /api/todo-lists\n    ")
@@ -23,7 +24,7 @@ public static class TodoListEndpoints
 
         _ = group
             .MapGet("/{id}", GetTodoList)
-            .Produces<TodoList>()
+            .Produces<TodoListResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .WithSummary("Lookup a TodoList by ID")
@@ -32,8 +33,8 @@ public static class TodoListEndpoints
 
         _ = group
             .MapPost("", CreateTodoList)
-            .Accepts<TodoList>("application/json")
-            .Produces<TodoList>()
+            .Accepts<TodoListResponse>("application/json")
+            .Produces<TodoListResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .WithSummary("Create a new TodoList")
@@ -42,8 +43,8 @@ public static class TodoListEndpoints
 
         _ = group
             .MapPut("/{id}", UpdateTodoList)
-            .Accepts<TodoList>("application/json")
-            .Produces<TodoList>()
+            .Accepts<TodoListResponse>("application/json")
+            .Produces<TodoListResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -69,7 +70,7 @@ public static class TodoListEndpoints
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
         var todoLists = await todoListService.GetTodoListsAsync(int.Parse(userId!));
-        return Results.Ok(todoLists);
+        return Results.Ok(todoLists.Select(TodoListResponse.FromEntity));
     }
 
     private static async Task<IResult> GetTodoList(
@@ -82,27 +83,33 @@ public static class TodoListEndpoints
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
         var todoList = await todoListService.GetTodoListAsync(id, int.Parse(userId!));
-        return Results.Ok(todoList);
+        return Results.Ok(TodoListResponse.FromEntity(todoList));
     }
 
     private static async Task<IResult> CreateTodoList(
         ITodoListService todoListService,
         HttpContext context,
-        TodoList todoList
+        TodoListResponse todoList
     )
     {
         var userId = context
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
-        var newTodoList = await todoListService.CreateTodoListAsync(int.Parse(userId!), todoList);
-        return Results.Created($"/api/todo-lists/{newTodoList.Id}", newTodoList);
+        var newTodoList = await todoListService.CreateTodoListAsync(
+            int.Parse(userId!),
+            todoList.ToEntity()
+        );
+        return Results.Created(
+            $"/api/todo-lists/{newTodoList.Id}",
+            TodoListResponse.FromEntity(newTodoList)
+        );
     }
 
     private static async Task<IResult> UpdateTodoList(
         ITodoListService todoListService,
         HttpContext context,
         int id,
-        TodoList todoList
+        TodoListResponse todoList
     )
     {
         var userId = context
@@ -111,9 +118,9 @@ public static class TodoListEndpoints
         var updatedTodoList = await todoListService.UpdateTodoListAsync(
             id,
             int.Parse(userId!),
-            todoList
+            todoList.ToEntity()
         );
-        return Results.Ok(updatedTodoList);
+        return Results.Ok(TodoListResponse.FromEntity(updatedTodoList));
     }
 
     private static async Task<IResult> DeleteTodoList(

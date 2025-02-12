@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application;
@@ -123,6 +124,8 @@ public static class WebApplicationBuilderExtensions
                         string username =
                             discordUser.GetProperty("username").GetString()
                             ?? throw new ArgumentNullException("Discord Username is missing");
+                        string avatar =
+                            discordUser.GetProperty("avatar").GetString() ?? string.Empty;
 
                         var userService =
                             context.HttpContext.RequestServices.GetRequiredService<IUserService>();
@@ -141,6 +144,12 @@ public static class WebApplicationBuilderExtensions
                         {
                             user.Name = username;
                             user = await userService.UpdateUserAsync(user);
+                        }
+
+                        var identity = context.Identity ?? context.Principal?.Identities.First();
+                        if (identity != null)
+                        {
+                            identity.AddClaim(new Claim("ApplicationUserId", user.Id.ToString()));
                         }
                     }
                 };

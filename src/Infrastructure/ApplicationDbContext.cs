@@ -7,6 +7,7 @@ namespace Infrastructure;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : DbContext(options)
 {
+    public int CurrentUserId { get; set; }
     public DbSet<TodoList> TodoLists => Set<TodoList>();
     public DbSet<Task> Tasks => Set<Task>();
     public DbSet<Tag> Tags => Set<Tag>();
@@ -15,6 +16,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TodoList>().HasQueryFilter(tl => tl.UserId == CurrentUserId);
+        modelBuilder.Entity<Task>().HasQueryFilter(t => t.TodoList.UserId == CurrentUserId);
+        modelBuilder
+            .Entity<TaskTags>()
+            .HasQueryFilter(tt => tt.Task.TodoList.UserId == CurrentUserId);
+        modelBuilder.Entity<User>().HasQueryFilter(u => u.Id == CurrentUserId);
+
         modelBuilder.Entity<TaskTags>().HasKey(tt => new { tt.TaskId, tt.TagId });
 
         modelBuilder

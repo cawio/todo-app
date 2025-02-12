@@ -29,6 +29,12 @@ public static class WebApplicationExtensions
 
         #endregion MinimalApi
 
+        #region Custom Middleware
+
+        app.UseMiddleware<SetCurrentUserMiddleware>();
+
+        #endregion Custom Middleware
+
         return app;
     }
 }

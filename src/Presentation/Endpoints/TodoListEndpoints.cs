@@ -69,7 +69,7 @@ public static class TodoListEndpoints
         var userId = context
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
-        var todoLists = await todoListService.GetTodoListsAsync(int.Parse(userId!));
+        var todoLists = await todoListService.GetTodoListsAsync();
         return Results.Ok(todoLists.Select(TodoListResponse.FromEntity));
     }
 
@@ -82,7 +82,7 @@ public static class TodoListEndpoints
         var userId = context
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
-        var todoList = await todoListService.GetTodoListAsync(id, int.Parse(userId!));
+        var todoList = await todoListService.GetTodoListAsync(id);
         return Results.Ok(TodoListResponse.FromEntity(todoList));
     }
 
@@ -95,10 +95,7 @@ public static class TodoListEndpoints
         var userId = context
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
-        var newTodoList = await todoListService.CreateTodoListAsync(
-            int.Parse(userId!),
-            todoList.ToEntity()
-        );
+        var newTodoList = await todoListService.CreateTodoListAsync(todoList.ToEntity());
         return Results.Created(
             $"/api/todo-lists/{newTodoList.Id}",
             TodoListResponse.FromEntity(newTodoList)
@@ -115,11 +112,7 @@ public static class TodoListEndpoints
         var userId = context
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
-        var updatedTodoList = await todoListService.UpdateTodoListAsync(
-            id,
-            int.Parse(userId!),
-            todoList.ToEntity()
-        );
+        var updatedTodoList = await todoListService.UpdateTodoListAsync(id, todoList.ToEntity());
         return Results.Ok(TodoListResponse.FromEntity(updatedTodoList));
     }
 
@@ -132,7 +125,7 @@ public static class TodoListEndpoints
         var userId = context
             .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
             ?.Value;
-        await todoListService.DeleteTodoListAsync(id, int.Parse(userId!));
+        await todoListService.DeleteTodoListAsync(id);
         return Results.NoContent();
     }
 }

@@ -4,9 +4,9 @@ namespace Application;
 
 public interface ITodoListService
 {
-    Task<List<TodoList>> GetTodoListsAsync(int userId);
-    Task<TodoList> GetTodoListAsync(int id, int userId);
-    Task<TodoList> CreateTodoListAsync(int userId, TodoList todoList);
-    Task<TodoList> UpdateTodoListAsync(int todoListId, int userId, TodoList todoList);
-    System.Threading.Tasks.Task DeleteTodoListAsync(int id, int userId);
+    Task<List<TodoList>> GetTodoListsAsync();
+    Task<TodoList> GetTodoListAsync(int id);
+    Task<TodoList> CreateTodoListAsync(TodoList todoList);
+    Task<TodoList> UpdateTodoListAsync(int todoListId, TodoList todoList);
+    System.Threading.Tasks.Task DeleteTodoListAsync(int id);
 }

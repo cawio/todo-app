@@ -137,12 +137,14 @@ public static class WebApplicationBuilderExtensions
                         {
                             user = await userService.CreateUserAsync(
                                 ulong.Parse(discordId),
-                                username
+                                username,
+                                avatar
                             );
                         }
                         else
                         {
                             user.Name = username;
+                            user.ProfilePictureId = avatar;
                             user = await userService.UpdateUserAsync(user);
                         }
 

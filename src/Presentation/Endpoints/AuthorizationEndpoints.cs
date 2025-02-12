@@ -3,6 +3,7 @@ using Application.Services;
 using AspNet.Security.OAuth.Discord;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Presentation.Contracts.Responses;
 
 namespace Presentation.Endpoints;
 
@@ -70,7 +71,7 @@ public static class AuthorizationEndpoints
                 return Results.Unauthorized();
             }
 
-            return Results.Ok(user);
+            return Results.Ok(UserResponse.FromEntity(user));
         }
 
         return Results.Unauthorized();

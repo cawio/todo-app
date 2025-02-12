@@ -20,12 +20,13 @@ public class UserService(ApplicationDbContext dbContext) : IUserService
         return await _dbContext.Users.FirstOrDefaultAsync(u => u.DiscordId == discordId);
     }
 
-    public async Task<User> CreateUserAsync(ulong discordId, string name)
+    public async Task<User> CreateUserAsync(ulong discordId, string name, string? pictureId)
     {
         var newUser = new User
         {
             DiscordId = discordId,
             Name = name,
+            ProfilePictureId = pictureId ?? string.Empty,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
         };

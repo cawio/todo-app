@@ -49,7 +49,13 @@ public static class AuthorizationEndpoints
     private static async void Logout(HttpContext context)
     {
         await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        context.Response.Redirect("/");
+        string frontendUrl =
+            context
+                .RequestServices.GetRequiredService<IConfiguration>()
+                .GetValue<string>("Frontend:Url")
+            ?? throw new ArgumentNullException("Frontend URL is missing");
+
+        context.Response.Redirect(frontendUrl + "/auth/login");
     }
 
     private static async Task<IResult> Me(IUserService userService, HttpContext context)

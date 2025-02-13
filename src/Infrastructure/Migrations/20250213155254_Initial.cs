@@ -26,6 +26,23 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DiscordId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ProfilePictureId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TodoLists",
                 columns: table => new
                 {
@@ -39,6 +56,12 @@ namespace Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TodoLists", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TodoLists_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -97,6 +120,11 @@ namespace Infrastructure.Migrations
                 column: "TodoListId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TodoLists_UserId",
+                table: "TodoLists",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TodoListTags_TagId",
                 table: "TodoListTags",
                 column: "TagId");
@@ -116,6 +144,9 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "TodoLists");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

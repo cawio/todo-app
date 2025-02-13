@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250209113556_AddUserEntity")]
-    partial class AddUserEntity
+    [Migration("20250213155254_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -136,10 +136,14 @@ namespace Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DiscordId")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("DiscordId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfilePictureId")
                         .IsRequired()
                         .HasColumnType("text");
 

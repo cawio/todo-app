@@ -1,4 +1,3 @@
-using System;
 using Infrastructure.Entities;
 
 namespace Presentation.Contracts.Responses;
@@ -8,7 +7,8 @@ public class UserResponse
     public int Id { get; set; }
     public string DiscordId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public string ProfilePictureId { get; set; } = string.Empty;
+    public string Discriminator = string.Empty;
+    public string? Avatar { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 
@@ -19,7 +19,8 @@ public class UserResponse
             Id = user.Id,
             DiscordId = user.DiscordId.ToString(),
             Name = user.Name,
-            ProfilePictureId = user.ProfilePictureId,
+            Discriminator = user.Discriminator,
+            Avatar = user.Avatar,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt
         };
@@ -31,8 +32,9 @@ public class UserResponse
         {
             Id = Id,
             DiscordId = ulong.Parse(DiscordId),
+            Discriminator = Discriminator,
             Name = Name,
-            ProfilePictureId = ProfilePictureId,
+            Avatar = Avatar,
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt
         };

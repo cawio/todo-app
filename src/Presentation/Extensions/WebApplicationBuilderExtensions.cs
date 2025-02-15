@@ -123,8 +123,10 @@ public static class WebApplicationBuilderExtensions
                         string username =
                             discordUser.GetProperty("username").GetString()
                             ?? throw new ArgumentNullException("Discord Username is missing");
-                        string avatar =
-                            discordUser.GetProperty("avatar").GetString() ?? string.Empty;
+                        string discriminator =
+                            discordUser.GetProperty("discriminator").GetString()
+                            ?? throw new ArgumentNullException("Discord Discriminator is missing");
+                        string? avatar = discordUser.GetProperty("avatar").GetString();
 
                         var userService =
                             context.HttpContext.RequestServices.GetRequiredService<IUserService>();
@@ -135,23 +137,27 @@ public static class WebApplicationBuilderExtensions
                         if (user == null)
                         {
                             user = await userService.CreateUserAsync(
-                                ulong.Parse(discordId),
-                                username,
-                                avatar
+                                new()
+                                {
+                                    DiscordId = ulong.Parse(discordId),
+                                    Name = username,
+                                    Discriminator = discriminator,
+                                    Avatar = avatar,
+                                    CreatedAt = DateTimeOffset.UtcNow,
+                                    UpdatedAt = DateTimeOffset.UtcNow
+                                }
                             );
                         }
                         else
                         {
                             user.Name = username;
-                            user.ProfilePictureId = avatar;
+                            user.Discriminator = discriminator;
+                            user.Avatar = avatar;
                             user = await userService.UpdateUserAsync(user);
                         }
 
                         var identity = context.Identity ?? context.Principal?.Identities.First();
-                        if (identity != null)
-                        {
-                            identity.AddClaim(new Claim("ApplicationUserId", user.Id.ToString()));
-                        }
+                        identity?.AddClaim(new Claim("ApplicationUserId", user.Id.ToString()));
                     }
                 };
             });

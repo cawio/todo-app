@@ -21,7 +21,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder
             .Entity<TaskTags>()
             .HasQueryFilter(tt => tt.Task.TodoList.UserId == CurrentUserId);
-        modelBuilder.Entity<User>().HasQueryFilter(u => u.Id == CurrentUserId);
 
         modelBuilder.Entity<TaskTags>().HasKey(tt => new { tt.TaskId, tt.TagId });
 

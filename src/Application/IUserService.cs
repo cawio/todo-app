@@ -1,7 +1,7 @@
 using Infrastructure.Entities;
 using Task = System.Threading.Tasks.Task;
 
-namespace Application.Services;
+namespace Application;
 
 public interface IUserService
 {

@@ -3,7 +3,7 @@ using Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Task = System.Threading.Tasks.Task;
 
-namespace Application.Services;
+namespace Application;
 
 public class UserService(ApplicationDbContext dbContext) : IUserService
 {

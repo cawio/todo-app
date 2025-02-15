@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application;
-using Application.Services;
 using AspNet.Security.OAuth.Discord;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
